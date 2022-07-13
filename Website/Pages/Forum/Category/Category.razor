@@ -1,13 +1,12 @@
-@page "/category/{urlName}/{fcdId}"
+@page "/category/{urlName}/{fcdId}/{logedId}"
 @inject NavigationManager NavManager
 @inject HttpClient Http
-@inject ForumReferenceProvider Data
+@*@inject ForumReferenceProvider Data*@
 @using SharpScape.Shared.Dto
 @using SharpScape.Website.Components.Forum
 @using SharpScape.Website.Components.Forum.Pagination
 <link href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet">
 <div class="background">
-
     @if (loading)
     {
         <center>
@@ -15,21 +14,10 @@
             <span style=" color:#99abb4 ">threads are loading</span>
         </center>
     }
-
-
-
-
-
     <div class="container">
-        @* <div class="row text-left mb-5">
-
-            </div>*@
-
-
-   <center>
-    <a href="/forum"><h3>Go Back to Categories List</h3> </a>
-    </center>
-
+        <center>
+        <a href="/forum"><h3>Go Back to Categories List</h3> </a>
+        </center>
         <div class="title">@UrlName </div>
         <div class="card">
             <div class="row align-items-center">
@@ -53,17 +41,19 @@
                 Body=@thread.Body
                 Date="Saturday, June 18, 2022"
                 Author=@getUser(thread.AuthorId)
+                AuthorId=@thread.AuthorId.ToString()
                 ThreadId=@thread.Id
                 Votes="251"
-                Replies=@thread.Replies.ToString() />
+                Replies=@thread.Replies.ToString()
+                logedId=@logedId
+                />
         }
-
         <Pagination TotalPages="@(totalPages != 0 ? totalPages : 1)"
                     PageIndex="@pageIndex"
                     Radius="3"
                     OnSelectedPage="@SelectedPage">
         </Pagination>
-        @if (Data.UserId > 0)
+        @if (logedId!="0")
         {
             <div class="row createbutton justify-content-center">
                 <button type="button" class="btn btn-primary" @onclick="@OpenCreateThread">Create Thread</button>
@@ -83,12 +73,10 @@
                             <form model="@tTopic">
                                 <div class="form-group">
                                     <label for="recipient-name" class="col-form-label">Title:</label>
-                                    @*  <input type="text" class="form-control" id="recipient-name" /> *@
                                     <InputText class="form-control" @bind-Value="tTopic.Title" />
                                 </div>
                                 <div class="form-group">
                                     <label for="message-text" class="col-form-label">Content:</label>
-                                    @*  <textarea class="form-control" id="message-text"></textarea> *@
                                     <InputTextArea class="form-control" id="testing1" @bind-Value="tTopic.Body" />
                                 </div>
                             </form>
@@ -103,8 +91,10 @@
         </div>
     }
 </div>
-
 @code {
+    [Parameter]
+    public string logedId { get; set; }
+
     [Parameter]
     public string UrlName { get; set; }
     public bool CreateThread { get; set; } = false;
@@ -134,10 +124,10 @@
             posts = await Http.GetFromJsonAsync<List<ForumPostDto>>($"/api/ForumPosts/Thread{thread.Id}");
             thread.Replies = posts.Count;
         }
-        if (users != null && Data.UserId > 0)
-        {
-            Data.UserName = getUser(Data.UserId);
-        }
+        //if (users != null && logedId.Length > 0)
+        //{
+        //    UserName = getUser(Convert.ToInt16(logedId));
+        //}
         if (allthreads != null)
         {
             // Initialize the number of "totalPages"
@@ -183,7 +173,7 @@
         // tempThread.Id = 0;
         tempThread.Views = 0;
         tempThread.Votes = 0;
-        tempThread.AuthorId = Data.UserId;
+        tempThread.AuthorId =Convert.ToInt32(logedId);
         tempThread.Replies = 0;
         CreateThread = false;
         var result = await Http.PostAsJsonAsync("/api/ForumThreads", tempThread);

@@ -69,7 +69,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options => {
         var rsaPublicKey = System.Security.Cryptography.RSA.Create();
-        rsaPublicKey.ImportFromPem(File.ReadAllText(builder.Configuration["Jwt:RSA:PublicKey"]));
+     rsaPublicKey.ImportFromPem(File.ReadAllText(builder.Configuration["Jwt:RSA:PublicKey"]));
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -112,8 +112,10 @@ if (app.Environment.IsDevelopment())
 
     app.UseCors();
 }
-
-app.UseHttpsRedirection();
+else
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
